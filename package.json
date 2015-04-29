@@ -1,0 +1,36 @@
+{
+  "name": "tcb-epiphany",
+  "version": "0.1.0-alpha",
+  "description": "I just got one.",
+  "main": "./lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thecodebureau/epiphany.git"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "mongodb",
+    "mongoose"
+  ],
+  "author": "The Code Bureau <info@thecodebureau> (https://thecodebureau.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/thecodebureau/epiphany/issues"
+  },
+  "homepage": "https://github.com/thecodebureau/epiphany",
+  "dependencies": {
+    "body-parser": "^1.12.3",
+    "dustjs-linkedin": "^2.7.0",
+    "express": "^4.12.3",
+    "express-session": "^1.11.1",
+    "html-minifier": "^0.7.2",
+    "lodash": "^3.7.0",
+    "mongoose": "~3.8.27",
+    "morgan": "^1.5.2",
+    "require-dir": "^0.3.0"
+  }
+}
