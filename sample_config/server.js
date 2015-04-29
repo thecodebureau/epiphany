@@ -64,15 +64,14 @@ var session = {
 			host: 'localhost'
 		}
 	},
-	//development: {
-	//	redis: null
-	//}
+	development: {
+		redis: null
+	}
 };
 
 module.exports = {
 	errorHandler: _.merge(errorHandler.defaults, errorHandler[ENV]),
 	mongo: _.merge(mongo.defaults, mongo[ENV]),
-	passport: _.merge(passport.defaults, passport[ENV]),
 	session: _.merge(session.defaults, session[ENV]),
 	port: port[ENV]
 };
