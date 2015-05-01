@@ -32,6 +32,19 @@ and postware (after).
 
 All these files are automatically loaded for you using the loaders.
 
+### Configuration
+
+Configuration is set up slightly differently from the rest. One can
+pass configuration to Epiphany using `options.config`. This can
+be an array or a single configuration item. A configuration item
+can either be a directory as a string, or a namespaced object.
+
+All configuration items will be merged, with the last configuration
+item taking precedence.
+
+All passed, if any, configurations will be loaded after the default
+Epiphany configurations.
+
 ### Middleware
 
 `init.middleware(directory, config)` requires all .js files in the
