@@ -208,6 +208,37 @@ To fetch the previously mentioned template we would make a request to `/template
 The route returns the name of the fetched template, and an array of compiled templates with the template
 itself and all of its dependencies.
 
+At the Code Bureau we have set up Dust in the browser to automatically load templates from this
+route if it is not found in the cache. We do this with the following code:
+
+```
+dust.onLoad = function(name, callback) {
+	// callback is a function provided by dust.
+	// run console.log(callback.toString()) if you are interested in it's contents.
+	function notFound() {
+		callback(new Error('Template Not Found: ' + name));
+	}
+	// attempt to load the template using the templates route in Express.
+	$.ajax({
+		method: 'GET',
+		url: '/templates/' + name,
+		dataType: 'json',
+		success: function(res) {
+			// the templates route does not only return the specified temlate, but also
+			// all templates it depends on. They are placed in the res.compiled array.
+			if(res.compiled.length > -1) {
+				_.each(res.compiled, dust.loadSource);
+				// the specified template will always be the first item in the res.compiled array.
+				callback(null, res.compiled[0]);
+			} else {
+				notFound();
+			}
+		},
+		error: notFound
+	});
+};
+```
+
 ## Preware & Postware
 
 Preware is middleware loaded before the routes, and postware is loaded after the routes.
