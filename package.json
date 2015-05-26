@@ -1,5 +1,5 @@
 {
-  "name": "tcb-epiphany",
+  "name": "epiphany",
   "version": "0.2.0",
   "description": "I just got one.",
   "main": "./lib/index.js",
