@@ -33,6 +33,7 @@
     "lodash": "^3.7.0",
     "mongoose": "~3.8.27",
     "morgan": "^1.5.2",
+    "poirot": "^0.1.0",
     "require-dir": "^0.3.0"
   }
 }
