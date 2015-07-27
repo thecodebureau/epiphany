@@ -1,0 +1,8 @@
+<div class="error row">
+	<div class="col">
+		<h1>Oops!</h1>
+		<p>Ett problem har tyvärr uppstått.</p>
+		<h2>{error.status} {error.statusText}</h2>
+		<p>{error.message}</p>
+	</div>
+</div>

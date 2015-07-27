@@ -1,0 +1,9 @@
+<div class="message {?type}{type} {/type}wrapper">
+	<div class="container">
+		{?heading}
+			<div class="heading">{heading}</div>
+		{/heading}
+		<div class="body">{body}</div>
+	</div>
+</div>
+		
