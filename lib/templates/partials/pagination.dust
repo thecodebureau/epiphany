@@ -1,0 +1,8 @@
+<section class="pagination">
+	<div class="count"><span class="label">Showing </span> <span class="thisPage">{thisPage}</span> of <span class="totalCount">{totalCount}</span> results.</div>
+	<a data-type="first" href="">First</a>
+	<a data-type="prev" href="">Previous</a>
+	<span class="numbers"></span>
+	<a data-type="next" href="">Next</a>
+	<a data-type="last" href="">Last</a>
+</section>

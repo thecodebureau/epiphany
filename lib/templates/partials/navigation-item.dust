@@ -1,0 +1,13 @@
+<li class="{name}{@currentPath/}">
+	<a class="nav" href="{root}{path}">{title}</a>
+	{?.sub}
+		<ul>
+		{#.sub}
+			{?nav}
+				{>"partials/navigation-item" page=page root=root /}
+			{/nav}
+		{/.sub}
+		</ul>
+	{/.sub}
+			
+</li>
