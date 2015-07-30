@@ -3,9 +3,7 @@
 	{?.sub}
 		<ul>
 		{#.sub}
-			{?nav}
-				{>"partials/navigation-item" page=page root=root /}
-			{/nav}
+			{>"partials/navigation-item" page=page root=root /}
 		{/.sub}
 		</ul>
 	{/.sub}
