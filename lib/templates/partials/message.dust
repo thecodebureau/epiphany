@@ -3,7 +3,7 @@
 		{?heading}
 			<div class="heading">{heading}</div>
 		{/heading}
-		<div class="body">{body}</div>
+		<div class="body">{body|s}</div>
 	</div>
 </div>
 		
