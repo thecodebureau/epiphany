@@ -4,9 +4,7 @@
 	<i></i>
 	<ul>
 		{#.}
-			{?nav}
-			 {>"partials/navigation-item"/}
-			{/nav}
+			{>"partials/navigation-item"/}
 		{/.}
 	</ul>
 </nav>
