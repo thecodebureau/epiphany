@@ -1,4 +1,4 @@
-<li class="{name}{@currentPath/}">
+<li class="{name}{@currentPath/}{?.sub} sub{/.sub}">
 	<a class="nav" href="{root}{path}">{title}</a>
 	{?.sub}
 		<ul>
