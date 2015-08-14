@@ -1,11 +1,12 @@
-<li class="{name}{@currentPath/}{?.sub} sub{/.sub}">
-	<a class="nav" href="{root}{path}">{title}</a>
-	{?.sub}
+<li class="{name}{#current} current{/current}{?.pages} sub{/.pages}">
+	<a class="nav" href="{path}">{title}</a>
+	<!-- has to be .pages instead of pages otherwise it will look further up in the context for pages, which will exist if it is a child-->
+	{?.pages}
 		<ul>
-		{#.sub}
-			{>"partials/navigation-item" page=page root=root /}
-		{/.sub}
+		{#.pages}
+			{>"partials/navigation-item" /}
+		{/.pages}
 		</ul>
-	{/.sub}
+	{/.pages}
 			
 </li>
