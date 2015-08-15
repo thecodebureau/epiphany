@@ -1,6 +1,6 @@
 {
   "name": "epiphany",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "I just got one.",
   "main": "./lib/index.js",
   "scripts": {
