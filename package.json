@@ -35,11 +35,11 @@
     "lodash": "^3.10.0",
     "mongoose": "^4.1.0",
     "morgan": "^1.6.1",
-    "nodemailer": "^1.4.0",
-    "poirot": "^0.1.1",
     "require-dir": "^0.3.0"
   },
   "peerDependencies": {
+    "poirot": "^0.1.1",
+    "nodemailer": "^1.4.0",
     "dustjs-linkedin": "^2.7.2"
   }
 }
