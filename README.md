@@ -14,17 +14,18 @@ of Node & Express servers. You have to use:
 
 ## Components
 
-We essentially define the 4 components of an Epiphany server to be:
+We essentially define the 5 components of an Epiphany server to be:
 
 1. Configurations
-2. Mongoose schemas & models
+2. Mongoose entities (plugins, schemas & models
 3. Express Middleware
 4. Express Routes
+5. Dust Templates
 
-This is it. You load all your components simply by telling Epiphany where
-they are located. They can be located in different locations. Epiphany
-has a property `directories` where it keeps arrays of locations
-of all components. These directories are used by the loaders.
+This is it. You load all your components simply by telling Epiphany where they
+are located (which directory). They can be located in different locations.
+Epiphany has a property `directories` where it keeps arrays of locations of all
+components. These directories are used by the loaders.
 
 ## The loaders
 
@@ -242,3 +243,15 @@ dust.onLoad = function(name, callback) {
 ## Preware & Postware
 
 Preware is middleware loaded before the routes, and postware is loaded after the routes.
+
+## Debugging
+
+Epiphany (and most other server-side modules from TCB) uses the excellent
+[Debug](https://github.com/visionmedia/debug) plugin.
+
+To debug everything, simply set `DEBUG=epiphany` as an environment variable. To debug
+specific parts, set (for example) `DEBUG=epiphany:loaders`. Debuggable parts are currently:
+
+- epiphany:loaders
+- epiphany:errorhandler
+- epiphany:responder
