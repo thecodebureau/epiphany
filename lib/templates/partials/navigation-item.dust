@@ -1,6 +1,6 @@
 <li class="{name}{#current} current{/current}{?.pages} sub{/.pages}">
-	<a class="nav" href="{path}">{title}</a>
-	<!-- has to be .pages instead of pages otherwise it will look further up in the context for pages, which will exist if it is a child-->
+	<a href="{path}">{title}</a>
+	{! has to be .pages instead of pages otherwise it will look further up in the context for pages, which will exist if it is a child !}
 	{?.pages}
 		<ul>
 		{#.pages}
@@ -8,5 +8,4 @@
 		{/.pages}
 		</ul>
 	{/.pages}
-			
 </li>
