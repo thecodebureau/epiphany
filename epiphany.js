@@ -3,7 +3,6 @@ var fs = require('fs');
 var p = require('path');
 
 // modules > 3rd party
-var _ = require('lodash');
 var dust = require('dustjs-linkedin');
 var chalk = require('chalk');
 var express = require('express');
@@ -15,16 +14,10 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 
-// globals
-global._ = _;
-
 var loaders = require('./loaders');
 
-var formatStack = require('./util/format-stack');
-
-// set up some globals
-global.ENV = global.ENV || process.env.NODE_ENV || 'development';
-global.PWD = global.PWD || process.env.PWD;
+var colorizeStack = require('./util/colorize-stack');
+var logError = require('./util/log-error');
 
 // app-module-path does not seem to persist in Node v0.10
 module.paths = _.union(module.paths, require.main.paths); 
@@ -41,6 +34,8 @@ var Epiphany = function(options) {
 	this.dust = dust;
 	
 	this.config = loaders.config(_.compact([ PWD + '/server/config', options.config ]));
+
+	logError.setConfig(this.config.errorHandler.log);
 
 	// connect to mongodb
 	mongoose.connect(this.config.mongo.uri, this.config.mongo.options);
@@ -136,7 +131,7 @@ var Epiphany = function(options) {
 			console.error(err);
 
 			if(err)
-				console.error(ENV === 'development' ? formatStack(err.stack) : err.stack);
+				console.error(colorizeStack(err.stack));
 
 			if(res.locals.error) {
 				console.error('[!!!] ORIGINAL ERROR');
