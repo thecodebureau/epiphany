@@ -2,7 +2,7 @@
   "name": "epiphany",
   "version": "0.6.2",
   "description": "I just got one.",
-  "main": "./lib/index.js",
+  "main": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

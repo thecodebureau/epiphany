@@ -17,7 +17,6 @@ appModulePath.addPath(p.join(process.env.PWD, 'modules'));
 appModulePath.addPath(p.join(p.dirname(__dirname),  'components'));
 appModulePath.addPath(p.join(p.dirname(__dirname),  'modules'));
 
-require('poirot');
 require('./dust-extensions');
 require('./mongoose-extensions');
 
