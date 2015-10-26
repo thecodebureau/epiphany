@@ -1,8 +1,13 @@
-var formatStack = require('./util/format-stack');
+// set up some globals
+global._ = require('lodash');
+global.ENV = global.ENV || process.env.NODE_ENV || 'development';
+global.PWD = global.PWD || process.env.PWD;
+
+var colorizeStack = require('./util/colorize-stack');
 
 process.on('uncaughtException', function (err) {
 	// TODO Node natively seems to get the line and outputs it before the stack
-	console.error(formatStack(err.stack));
+	console.error(colorizeStack(err.stack));
 	process.exit(1);
 });
 

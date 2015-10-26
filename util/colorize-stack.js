@@ -1,5 +1,7 @@
+// modules > native
 var p = require('path');
 
+// modules > 3rd party
 var chalk = require('chalk');
 
 module.exports = function(stack) {
