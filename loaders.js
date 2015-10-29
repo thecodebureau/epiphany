@@ -148,7 +148,7 @@ module.exports = {
 		return templates;
 	},
 
-	mongoose: function(modelDirectories, pluginDirectories, schemaDirectories) {
+	mongoose: function(modelDirectories, pluginDirectories, schemaDirectories, epiphany) {
 		// Save base schema, which should be used for all
 		// data base models.
 		var schemas = {};
@@ -210,7 +210,7 @@ module.exports = {
 		while((length = models.length) > 0) {
 			models = models.filter(function run(arr) {
 				try {
-					arr[1](mongoose, schemas, plugins);
+					arr[1](mongoose, schemas, plugins, epiphany);
 				} catch(e) {
 					// TODO maybe enable debugging
 
@@ -268,6 +268,10 @@ module.exports = {
 					paths[key] = [];
 					var rootPath = key === 'public' ? '' : key + '/';
 
+					var prewares = pages.pre || [];
+
+					var postwares = pages.post || [];
+
 					var recurse = function(pages, tree) {
 						return _.compact(_.map(pages, function(page) {
 
@@ -318,13 +322,13 @@ module.exports = {
 
 							var pageClone = _.clone(page);
 
-							page.mw = _.compact([ function pg(req, res, next) {
+							page.mw = _.compact(prewares.concat(function pg(req, res, next) {
 								res.locals.page = pageClone;
 								res.locals.page.path = req.path;
 								res.locals.navigation = epiphany.navigation[key];
 								res.locals.template = page.template;
 								next();
-							} ].concat(page.mw));
+							}, page.mw, postwares));
 
 							// TODO has side effect > not functional
 							routes.push([ page.method || 'get', page.path, page.mw ]);
