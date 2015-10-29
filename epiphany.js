@@ -88,7 +88,7 @@ var Epiphany = function(options) {
 	this.server = require('./express-setup')(this.config);
 
 	// load all models into mongoose instance (reachable through require('mongoose').model('ModelName'))
-	loaders.mongoose(this.items.models, this.items.plugins, this.items.schemas);
+	loaders.mongoose(this.items.models, this.items.plugins, this.items.schemas, this);
 
 	this.mw = loaders.middleware(this.items.mw, this.config);
 
