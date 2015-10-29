@@ -211,7 +211,7 @@ Epiphany.prototype.module = function(module, last) {
 Epiphany.prototype.start = function() {
 	var _app = this;
 
-	_app.server.locals.lang = process.env.NODE_LANG || 'en-gb';
+	_app.server.locals.lang = process.env.NODE_LANG || 'en';
 
 	var jsFile = p.join(PWD, 'public/js.json');
 
