@@ -323,8 +323,13 @@ module.exports = {
 							var pageClone = _.clone(page);
 
 							page.mw = _.compact(prewares.concat(function pg(req, res, next) {
-								res.locals.page = pageClone;
-								res.locals.page.path = req.path;
+								var page = _.clone(pageClone);
+								
+								// we need routePath mainly so that we can use ie news/:id to set content in hats/content
+								page.routePath = page.path;
+								page.path = req.path;
+
+								res.locals.page = page;
 								res.locals.navigation = epiphany.navigation[key];
 								res.locals.template = page.template;
 								next();
