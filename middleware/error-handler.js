@@ -1,7 +1,8 @@
+// modules > native
 var p = require('path');
 var fs = require('fs');
 
-// get file location from stack trace
+// modules > internal
 var format = require('../util/format-error');
 var log = require('../util/log-error');
 

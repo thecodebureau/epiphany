@@ -1,5 +1,3 @@
-var _ = require('lodash');
-
 module.exports = function(config) {
 	if(!config.port || !_.isNumber(config.port)) throw new Error('Port undefined or not a number');
 

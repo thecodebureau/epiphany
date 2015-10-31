@@ -6,7 +6,6 @@ var p = require('path');
 var url = require('url');
 
 // modules > 3rd-party
-var _ = require('lodash');
 var dust = require('dustjs-linkedin');
 var mongoose = require('mongoose');
 var requireDir = require('require-dir');

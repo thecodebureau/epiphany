@@ -1,10 +1,10 @@
-// EXPRESS
+// modules > 3rd party
 var express = require('express');
 var dust = require('dustjs-linkedin');
 
-var _ = require('lodash');
 var server = express();
 
+// overrides express render function
 require('./express-overrides')(server);
 
 module.exports = function(config) {

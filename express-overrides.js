@@ -1,6 +1,3 @@
-var _ = require('lodash');
-var path = require('path');
-
 module.exports = function(server) {
 	server.render = function(name, options, fn){
 		var opts = {};

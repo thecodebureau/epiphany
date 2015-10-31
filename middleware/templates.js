@@ -1,4 +1,4 @@
-var _ = require('lodash');
+// modules > 3rd party
 var dust = require('dustjs-linkedin');
 
 module.exports = function(config) {
