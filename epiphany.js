@@ -75,9 +75,12 @@ var Epiphany = function(options) {
 		routes: [ __dirname + '/routes', PWD + '/server/routes' ],
 		schemas: [ __dirname + '/schemas', PWD + '/server/schemas' ],// (mongoose schemas)
 		plugins: [ __dirname + '/plugins', PWD + '/server/plugins' ],// (mongoose plugins)
-		templates: [ __dirname + '/templates', PWD + '/server/templates' ],
+		templates: [ this.config.dir.server.templates ],
 		setup: []
 	};
+
+	if(options.fetchTemplates)
+		this.items.templates.unshift(__dirname + '/templates');
 
 	// remove all duplicate items
 	// RBNNOTE: What does this do? It returns without assigning to a var
@@ -201,8 +204,10 @@ Epiphany.prototype.module = function(module, last) {
 			'routes',
 			'schemas',
 			'setup',
-			'templates',
 	];
+
+	if(this.options.fetchTemplates)
+		props.push('templates');
 	
 	_.each(_.pick(module, props), function(value, key) {
 		// splice at index -1 to make sure PWD/server/ items are always last and are able

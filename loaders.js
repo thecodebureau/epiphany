@@ -1,17 +1,14 @@
-// MODULES
-
 // modules > native
 var fs = require('fs');
 var p = require('path');
 var url = require('url');
 
 // modules > 3rd-party
+var chalk = require('chalk');
+var debug = require('debug')('epiphany:loaders');
 var dust = require('dustjs-linkedin');
 var mongoose = require('mongoose');
 var requireDir = require('require-dir');
-var minify = require('html-minifier').minify;
-var chalk = require('chalk');
-var debug = require('debug')('epiphany:loaders');
 
 var isWin = /^win/.test(process.platform);
 
@@ -99,26 +96,19 @@ module.exports = {
 				} else if(p.extname(file) === '.dust') {
 					var src = fs.readFileSync(file, { encoding: 'utf8' });
 
-					if(ENV === 'production') {
-						var regexp = /{[\/?+:#><]?[^}]*}/g;
-						var matches = src.match(regexp) || [];
-						src = src.split(regexp).join('aaaaaaaaaaaa');
-						src = minify(src, { collapseWhitespace: true });
-						
-
-						var arr = src.split('aaaaaaaaaaaa');
-						src = '';
-						for (var i = 0; i < arr.length; i++) {
-							src = src + arr[i] + (matches[i] ? matches[i] : '');
-						}
-					}
-
 					var name = p.relative(directory, file).slice(0,-5);
 
 					if(isWin)
 						name = name.split('\\').join('/');
 
-					var compiled = dust.compile(src, name);
+					try {
+						var compiled = dust.compile(src, name);
+					} catch(e) {
+						console.log('error in template: ' + file);
+						console.log(e);
+						return;
+					}
+
 					var dependencies = compiled.match(/\.p\("(.*?)"/g);
 
 					if(dependencies) {
