@@ -14,12 +14,18 @@ var bodyParser = require('body-parser');
 var session = require('express-session');
 var cookieParser = require('cookie-parser');
 
+// modules > internal
 var loaders = require('./loaders');
-
 var colorizeStack = require('./util/colorize-stack');
 var logError = require('./util/log-error');
 
-// app-module-path does not seem to persist in Node v0.10
+// extend dust and mongoose
+require('./dust-extensions');
+require('./mongoose-extensions');
+
+// app-module-path paths do not persist to modules installed in node_modules
+// (not symlinked), so to access custom module paths (ie PWD/modules) we need
+// to union current model.paths with main module's paths.
 module.paths = _.union(module.paths, require.main.paths); 
 
 var Epiphany = function(options) {
@@ -30,11 +36,13 @@ var Epiphany = function(options) {
 	// set up references to instances that might be needed later
 	this.mongoose = mongoose;
 	this.express = express;
-	// TODO decide whether to get dust like this, or make it peerDependency
+
 	this.dust = dust;
 	
+	// load configuration
 	this.config = loaders.config(_.compact([ PWD + '/server/config', options.config ]));
 
+	// set default configuration in error logger
 	logError.setConfig(this.config.errorHandler.log);
 
 	// connect to mongodb
@@ -85,6 +93,7 @@ var Epiphany = function(options) {
 	// add mw, config and what not from
 	this.module(options, true);
 
+	// setup express
 	this.server = require('./express-setup')(this.config);
 
 	// load all models into mongoose instance (reachable through require('mongoose').model('ModelName'))
