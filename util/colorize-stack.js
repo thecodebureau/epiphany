@@ -5,6 +5,8 @@ var p = require('path');
 var chalk = require('chalk');
 
 module.exports = function(stack) {
+	if(!stack) return;
+
 	stack = stack.replace(/\/[\/\w.-]+/g, function(match) {
 		if(match.indexOf('node_modules') > -1) 
 			return match;
