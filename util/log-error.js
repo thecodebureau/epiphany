@@ -1,8 +1,10 @@
-var colorizeStack = require('./colorize-stack');
-var formatError = require('./format-error');
-
+// modules > 3rd party
 var chalk = require('chalk');
 var debug = require('debug')('epiphany:errorHandler');
+
+//modules > internal
+var colorizeStack = require('./colorize-stack');
+var formatError = require('./format-error');
 
 // string added to all errors logged to console
 var prefix = '[' + chalk.red('EE') + ']: ';

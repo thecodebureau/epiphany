@@ -1,4 +1,3 @@
-var _ = require('lodash');
 var mongoose = require('mongoose');
 
 mongoose.Schema.prototype.objectify = function(returnId) {
