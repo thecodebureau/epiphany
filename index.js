@@ -1,28 +1,34 @@
+// modules > native
+var p = require('path');
+
 // set up some globals
-global._ = require('lodash');
 global.ENV = global.ENV || process.env.NODE_ENV || 'development';
-global.PWD = global.PWD || process.env.PWD;
+global.PWD = global.PWD || process.env.PWD || process.cwd();
+
+// if symlinked we need to add PWD/node_modules to paths
+// so we can require app-module paths
+if(__dirname.indexOf(PWD) < 0) {
+	module.paths.unshift(p.join(process.env.PWD, 'node_modules'));
+}
+
+var appModulePath = require( 'app-module-path');
+
+if(ENV !== 'production')
+	// only needed for symlinked modules. such as epiphany itself or hats
+	appModulePath.addPath(p.join(process.env.PWD, 'node_modules'));
+
+appModulePath.addPath(p.join(process.env.PWD, 'modules'));
+
+// make lodash global
+global._ = require('lodash');
 
 var colorizeStack = require('./util/colorize-stack');
 
+// make error output stack pretty
 process.on('uncaughtException', function (err) {
 	// TODO Node natively seems to get the line and outputs it before the stack
 	console.error(colorizeStack(err.stack));
 	process.exit(1);
 });
-
-var p = require('path');
-
-var appModulePath = require('app-module-path');
-
-// first path is only needed when epiphany has been symlinked (npm link)
-appModulePath.addPath(p.join(process.env.PWD, 'node_modules'));
-appModulePath.addPath(p.join(process.env.PWD, 'components'));
-appModulePath.addPath(p.join(process.env.PWD, 'modules'));
-appModulePath.addPath(p.join(p.dirname(__dirname),  'components'));
-appModulePath.addPath(p.join(p.dirname(__dirname),  'modules'));
-
-require('./dust-extensions');
-require('./mongoose-extensions');
 
 module.exports = require('./epiphany');
