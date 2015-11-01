@@ -46,7 +46,7 @@ var Epiphany = function(options) {
 	logError.setConfig(this.config.errorHandler.log);
 
 	// connect to mongodb
-	mongoose.connect(this.config.mongo.uri, this.config.mongo.options);
+	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
 
 	if (this.config.session.redis) {
 		var RedisStore = require('connect-redis')(session);
