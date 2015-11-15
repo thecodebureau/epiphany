@@ -1,6 +1,5 @@
 <nav class="{?class}{class}{:else}main{/class}">
 	<div class="dud"></div>
-	<div class="cover"></div>
 	<i></i>
 	<ul>
 		{#.}
