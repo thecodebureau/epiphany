@@ -234,7 +234,7 @@ Epiphany.prototype.start = function() {
 
 	var cssFile = p.join(PWD, 'public/css.json');
 
-	if(fs.existsSync(jsFile))
+	if(fs.existsSync(cssFile))
 		_app.server.locals.css = require(cssFile);
 
 	this.prewares.forEach(function(mw, i) {
