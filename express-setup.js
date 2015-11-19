@@ -18,6 +18,9 @@ module.exports = function(config) {
 	// preserve whitespaces development mode. in production mode, most
 	// minifying is done by html-minifier in loaders.js, so we
 	// don't have to worry about whitespaces
+	if(ENV === 'development')
+		server.set('trust proxy', true);
+
 	if(ENV !== 'production')
 		dust.config.whitespace = true;
 
