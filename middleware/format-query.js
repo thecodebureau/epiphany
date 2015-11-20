@@ -6,7 +6,8 @@ module.exports = function(req, res, next) {
 
 		var arr;
 
-		if(/^\//.test(value)) {
+		// TODO this test for regex strings will match paths whos last component only contain valid flags(i, g, m). For examaple: /path/img
+		if(/^\/.*\/[gim]*$/.test(value)) {
 			arr = value.match(/\/(.*)\/(.*)/);
 			value = new RegExp(arr[1], arr[2] || undefined);
 		} else if(/=/.test(value)) {
