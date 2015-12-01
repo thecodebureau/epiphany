@@ -1,25 +1,32 @@
 var evals = [ 'undefined', 'null', 'false', 'true' ];
 
-module.exports = function(req, res, next) {
-	req.query = _.mapValues(req.query, function(value, key) {
-		value = decodeURIComponent(value);
+var _filters = {
+	regex: function(value) {
+		return new RegExp(value, 'i');
+	},
 
-		var arr;
+	exists: function(value) {
+		if(value === true)
+			return { $ne: null };
+		else 
+			return { $eq: null };
+	}
+};
 
-		// TODO this test for regex strings will match paths whos last component only contain valid flags(i, g, m). For examaple: /path/img
-		if(/^\/.*\/[gim]*$/.test(value)) {
-			arr = value.match(/\/(.*)\/(.*)/);
-			value = new RegExp(arr[1], arr[2] || undefined);
-		} else if(/=/.test(value)) {
-			arr = value.split('=');
-
-			value = {};
-
-			value[arr[0]] = evals.indexOf(arr[1]) > -1 ? eval(arr[1]) : arr[1];
-		}
-
-		return value;
+module.exports = function(properties, filters) {
+	filters = _.mapValues(filters, function(value, key) {
+		return _.isString(value) ? _filters[value] : value;
 	});
 
-	next();
+	return function(req, res, next) {
+		req.query = _.mapValues(_.pick(req.query, properties), function(value, key) {
+			value = decodeURIComponent(value);
+
+			if(evals.indexOf(value) > -1) value = eval(value);
+
+			return filters[key] ? filters[key](value) : value;
+		});
+
+		next();
+	};
 };
