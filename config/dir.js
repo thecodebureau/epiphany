@@ -19,6 +19,7 @@ module.exports = {
 		fonts: p.join(PWD, 'public', 'fonts'),
 		img: p.join(PWD, 'public', 'img'),
 		root: p.join(PWD, 'public'),
+		templates: p.join(PWD, 'public', 'uncompiled-templates'),
 		scripts: p.join(PWD, 'public', 'js')
 	},
 
@@ -30,7 +31,7 @@ module.exports = {
 		routes: p.join(PWD, 'server', 'routes'),
 		root: p.join(PWD, 'server'),
 		schemas: p.join(PWD, 'server', 'schema.org'),
-		templates: p.join(PWD, 'server', 'templates'),
+		templates: p.join(PWD, 'public', 'uncompiled-templates'),
 		uploads: p.join(PWD, 'server', 'uploads')
 	},
 
@@ -42,6 +43,7 @@ module.exports = {
 		sass: p.join(PWD, 'src', 'sass'),
 		static: p.join(PWD, 'src', 'static'),
 		scripts: p.join(PWD, 'src', 'js'),
+		templates: p.join(PWD, 'src', 'templates'),
 		svg: p.join(PWD, 'src', 'svg'),
 	}
 };
