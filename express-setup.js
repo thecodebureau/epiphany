@@ -13,7 +13,7 @@ module.exports = function(config) {
 		dust.render(name, _.omit(options, 'settings', '_locals'), fn);
 	});
 	server.set('view engine', 'dust');
-	server.set('views', config.dir.src.templates);
+	server.set('views', config.dir.templates);
 
 	// preserve whitespaces development mode. in production mode, most
 	// minifying is done by html-minifier in loaders.js, so we
