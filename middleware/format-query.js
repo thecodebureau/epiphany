@@ -14,6 +14,8 @@ var _filters = {
 };
 
 module.exports = function(properties, filters) {
+	properties = _.union(properties, _.keys(filters));
+
 	filters = _.mapValues(filters, function(value, key) {
 		return _.isString(value) ? _filters[value] : value;
 	});
