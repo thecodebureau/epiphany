@@ -64,6 +64,7 @@ var Epiphany = function(options) {
 
 	var mw = {
 		static: express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
+		uploads: express.static(this.config.dir.uploads, ENV === 'production' ? { maxAge: '1 year' } : null),
 		bodyParser: [ bodyParser.json(), bodyParser.urlencoded({ extended:true }) ],
 		cookieParser: cookieParser(),
 		session: session(this.config.session)
@@ -123,6 +124,7 @@ var Epiphany = function(options) {
 	// set up default prewares
 	this.prewares = [
 		this.mw.static,
+		this.mw.uploads,
 		this.mw.bodyParser,
 		this.mw.cookieParser,
 		this.mw.session,
