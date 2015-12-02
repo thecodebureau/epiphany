@@ -48,6 +48,7 @@ var Epiphany = function(options) {
 	// connect to mongodb
 	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
 
+	// TODO would be nice if this could be moved somewhere else...
 	if (this.config.session.redis) {
 		var RedisStore = require('connect-redis')(session);
 
@@ -62,23 +63,26 @@ var Epiphany = function(options) {
 	}
 
 	var mw = {
-		static: express.static(this.config.dir.public.root, ENV === 'production' ? { maxAge: '1 year' } : null),
+		static: express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
 		bodyParser: [ bodyParser.json(), bodyParser.urlencoded({ extended:true }) ],
 		cookieParser: cookieParser(),
 		session: session(this.config.session)
 	};
 
 	this.items = {
-		models: [ __dirname + '/models', PWD + '/server/models' ],
-		mw: [ __dirname + '/middleware', mw, PWD + '/server/middleware' ],
+		models: [ __dirname + '/models', this.config.dir.models ],
+		mw: [ __dirname + '/middleware', mw, this.config.dir.middleware ],
 		pages: [],
-		routes: [ __dirname + '/routes', PWD + '/server/routes' ],
-		schemas: [ __dirname + '/schemas', PWD + '/server/schemas' ],// (mongoose schemas)
-		plugins: [ __dirname + '/plugins', PWD + '/server/plugins' ],// (mongoose plugins)
-		templates: [ this.config.dir.server.templates ],
+		routes: [ __dirname + '/routes', this.config.dir.routes ],
+		schemas: [ __dirname + '/schemas', this.config.dir.schemas ],// (mongoose schemas)
+		plugins: [ __dirname + '/plugins', this.config.dir.plugins ],// (mongoose plugins)
+		templates: [ this.config.dir.templates ],
 		setup: []
 	};
 
+	// since Epiphany v0.7.0 all templates should be in the same directory, tcb-gulp
+	// handles this. If you want Epiphany to fetch templates from multiple locations
+	// set options.fetchTemplates to true
 	if(options.fetchTemplates)
 		this.items.templates.unshift(__dirname + '/templates');
 
