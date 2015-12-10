@@ -1,10 +1,10 @@
 module.exports = {
 	defaults: {
-		uri: 'mongodb://localhost/changeThisFool' 
-		//uri: 'mongodb://user:password@tcb01.thecodebureau.com/changeThisFool' 
+		uri: 'mongodb://localhost/changethisfool' 
+		//uri: 'mongodb://user:password@mongo.thecodebureau.com/changethisfool' 
 	},
-	development: {
-		//uri: 'mongodb://user:password@tcb01.thecodebureau.com/changeThisFoolDev' 
-		uri: 'mongodb://localhost/changeThisFoolDev' 
+	production: {
+		uri: 'mongodb://user:password/localhost/changethisfool' 
+		//uri: 'mongodb://user:password@mongo.thecodebureau.com/changethisfool' 
 	}
 };
