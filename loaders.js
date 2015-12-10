@@ -222,31 +222,17 @@ module.exports = {
 		}
 	},
 
-	pages: function(items, epiphany) {
+	pages: function(pageItems, epiphany) {
 		var navigation = {};
 		var routes = [];
-		var paths = {};
+		var allPages = {};
 
-		items.forEach(function(item) {
+
+		pageItems.forEach(function(item) {
 			if(_.isFunction(item))
 				item = item(epiphany.mw, epiphany);
 
 			_.each(item, function(pages, key) {
-				function current(chunk, context, bodies, params) {
-					var page = context.get('page');
-
-					if(page && page.path) {
-						var slice = rootPath.length + 1;
-
-						var currentPath = page.path.slice(slice);
-
-						var path = this.path.slice(slice);
-						
-						return (!path && !currentPath || path && currentPath.indexOf(path) === 0);
-					}
-					return false;
-				}
-
 				if(key === 'redirects') {
 					pages.forEach(function(arr) {
 						routes.push('get', arr[0], function redirect(req, res) {
@@ -254,15 +240,16 @@ module.exports = {
 						});
 					});
 				} else {
-					paths[key] = [];
+					allPages[key] = pages;
 					var rootPath = key === 'public' ? '' : key + '/';
 
 					var prewares = pages.pre || [];
-
 					var postwares = pages.post || [];
 
-					var recurse = function(pages, tree) {
-						return _.compact(_.map(pages, function(page) {
+					// recurse loops through all page objects from pages.js and fills in any blanks.
+					// it returns all objects that should be available in navigation
+					function recurse(pages, tree, nav) {
+						_.each(pages, function(page) {
 
 							if(!page.name)
 								if(page.title)
@@ -293,48 +280,65 @@ module.exports = {
 
 							page.path = '/' + rootPath + path.join('/');
 
-							paths[key].push(page.path);
-
 							if(!dust.cache[page.template]) {
 								page.template = p.join(page.template, 'index');
+
 								if(!dust.cache[page.template]) {
 									throw new Error('No template found for page: ' + page.path);
 								}
 							}
 
-							if(_.isArray(page.pages)) {
-								page.pages = recurse(page.pages, path);
-
-								if(page.pages.length === 0)
-									delete page.pages;
-							}
-
-							var pageClone = _.clone(page);
-
-							page.mw = _.compact(prewares.concat(function pg(req, res, next) {
-								var page = _.clone(pageClone);
-								
+							var mw = _.compact(prewares.concat(function pg(req, res, next) {
 								// we need routePath mainly so that we can use ie news/:id to set content in hats/content
-								page.routePath = page.path;
-								page.path = req.path;
-
-								res.locals.page = page;
+								var pageClone = _.clone(page);
+								pageClone.routePath = pageClone.path;
+								pageClone.path = req.path;
+								res.locals.page = pageClone;
 								res.locals.navigation = epiphany.navigation[key];
-								res.locals.template = page.template;
+								res.locals.template = pageClone.template;
+
 								next();
 							}, page.mw, postwares));
 
-							// TODO has side effect > not functional
-							routes.push([ page.method || 'get', page.path, page.mw ]);
+							delete page.mw;
 
-							page.current = current;
+							routes.push([ page.method || 'get', page.path, mw ]);
 
-							return page.nav === false ? undefined : _.clone(page);
-						}));
-					};
+							// return an object consisting only of the properties required by
+							// the navigation templates
+							var navObject;
+							if(page.nav !== false && nav) {
+								nav.push(navObject = _.extend({
+									// TODO add this to sprinkles? if so, 'rootPath' needs to be
+									// available in the context
+									current: function current(chunk, context, bodies, params) {
+										var page = context.get('page');
 
-					var nav = recurse(pages, []);
-					navigation[key] = nav;
+										if(page && page.path) {
+											var slice = rootPath.length + 1;
+
+											var currentPath = page.path.slice(slice);
+
+											var path = this.path.slice(slice);
+											
+											return (!path && !currentPath || path && currentPath.indexOf(path) === 0);
+										}
+										return false;
+									}
+								}, _.pick(page, 'name', 'title', 'path')));
+							}
+
+							if(_.isArray(page.pages)) {
+								if(page.pages.length === 0)
+									delete page.pages;
+								else
+									recurse(page.pages, path, navObject ? _.last(nav).pages = [] : undefined);
+							}
+
+						});
+					}
+
+					recurse(pages, [], navigation[key] = []);
 				}
 			});
 		});
@@ -342,7 +346,7 @@ module.exports = {
 		return {
 			routes: routes,
 			navigation: navigation,
-			paths: paths
+			pages: allPages
 		};
 	},
 

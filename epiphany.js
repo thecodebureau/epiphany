@@ -112,12 +112,12 @@ var Epiphany = function(options) {
 	dust.templates = loaders.templates(this.items.templates);
 
 	// pages need to be loaded after templates, mw so loader can ensure existence of page template, mw
-	var pages = loaders.pages(this.items.pages, this);
+	var result = loaders.pages(this.items.pages, this);
 
-	this.paths = pages.paths;
-	this.navigation = pages.navigation;
+	this.pages = result.pages;
+	this.navigation = result.navigation;
 
-	this.items.routes.splice(1,0, pages.routes);
+	this.items.routes.splice(1,0, result.routes);
 
 	this.routes = loaders.routes(this.items.routes, this.mw, this);
 
