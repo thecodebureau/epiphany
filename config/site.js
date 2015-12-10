@@ -15,17 +15,22 @@ module.exports = function(config) {
 				return this.protocol + '://' + this.host + '/';
 			}
 		},
+
+		development: {
+			hostname: 'localhost',
+			port: process.env.EXTERNAL_PORT || config.port
+		},
+
 		testing: {
 			hostname: 'testing.' + domain
 		},
 
 		staging: {
-			hostname: 'stagin.' + domain
+			hostname: 'staging.' + domain
 		},
 
-		development: {
-			hostname: 'localhost',
-			port: process.env.EXTERNAL_PORT || config.port
+		production: {
+			hostname: domain
 		}
 	};
 
