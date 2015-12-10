@@ -3,6 +3,7 @@ module.exports = {
 	//"@type": { type: String, default: "PostalAddress" },
 
 	//>>PostalAddress
+	area: String,// TCB for buildings, neighbourhood or similar. Ie Ideon Science Park or Ideon Agora
 	addressCountry: String,//	The country. For example, USA. You can also provide the two-letter ISO 3166-1 alpha-2 country code.
 	addressLocality: String,//The locality. For example, Mountain View.
 	addressRegion: String,//The region. For example, CA.
