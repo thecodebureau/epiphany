@@ -325,7 +325,7 @@ module.exports = {
 										}
 										return false;
 									}
-								}, _.pick(page, 'name', 'title', 'path')));
+								}, _.pick(page, 'name', 'title', 'path', 'description')));
 							}
 
 							if(_.isArray(page.pages)) {
