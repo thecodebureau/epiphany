@@ -18,7 +18,7 @@ module.exports = function(config) {
 
 		development: {
 			hostname: 'localhost',
-			port: process.env.EXTERNAL_PORT || config.port
+			port: process.env.EXTERNAL_PORT || process.env.PORT || config.port
 		},
 
 		testing: {
