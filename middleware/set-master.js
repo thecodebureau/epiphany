@@ -1,8 +1,6 @@
-module.exports = function(config) {
-	return function(master) {
-		return function setMaster(req, res, next) {
-			res.master = master;
-			next();
-		};
+module.exports = function(master) {
+	return function setMaster(req, res, next) {
+		res.master = master;
+		next();
 	};
 };

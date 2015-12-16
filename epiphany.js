@@ -16,155 +16,72 @@ var cookieParser = require('cookie-parser');
 
 // modules > internal
 var loaders = require('./loaders');
-var colorizeStack = require('./util/colorize-stack');
 var logError = require('./util/log-error');
 
 // extend dust and mongoose
 require('./dust-extensions');
-require('./mongoose-extensions');
 
-// app-module-path paths do not persist to modules installed in node_modules
-// (not symlinked), so to access custom module paths (ie PWD/modules) we need
-// to union current model.paths with main module's paths.
-module.paths = _.union(module.paths, require.main.paths); 
 
 var Epiphany = function(options) {
-	var _app = this;
+	options = options || {};
 
-	this.options = options = options || {};
-
-	// set up references to instances that might be needed later
-	this.mongoose = mongoose;
-	this.express = express;
-
-	this.dust = dust;
-	
 	// load configuration
-	this.config = loaders.config(_.compact([ PWD + '/server/config', options.config ]));
-
-	// set default configuration in error logger
-	logError.setConfig(this.config.errorHandler.log);
+	this.config = _.merge(requireDir(p.join(PWD, '/server/config'), { camelcase: true }), options.config );
 
 	// connect to mongodb
 	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
 
-	// TODO would be nice if this could be moved somewhere else...
-	if (this.config.session.redis) {
-		var RedisStore = require('connect-redis')(session);
+	// setup express
+	this.server = require('./express-setup')(this.config);
 
-		var redisStore = new RedisStore(this.config.session.redis);
-		redisStore.on('connect', function(){
-			console.info("Redis connected succcessfully"); });
-		redisStore.on('disconnect', function(){
-			console.error("[" + chalk.red('ERROR') + "]  Unable to connect to redis. Has it been started?"); 
-			process.exit(2);
-		});
-		this.config.session.store = redisStore;
-	}
-
-	var mw = {
+	this.middleware = _.merge({
 		static: express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
 		uploads: express.static(this.config.dir.uploads, ENV === 'production' ? { maxAge: '1 year' } : null),
 		bodyParser: [ bodyParser.json(), bodyParser.urlencoded({ extended:true }) ],
 		cookieParser: cookieParser(),
 		session: session(this.config.session)
-	};
-
-	this.items = {
-		models: [ __dirname + '/models', this.config.dir.models ],
-		mw: [ __dirname + '/middleware', mw, this.config.dir.middleware ],
-		pages: [],
-		routes: [ __dirname + '/routes', this.config.dir.routes ],
-		schemas: [ __dirname + '/schemas', this.config.dir.schemas ],// (mongoose schemas)
-		plugins: [ __dirname + '/plugins', this.config.dir.plugins ],// (mongoose plugins)
-		templates: [ this.config.dir.templates ],
-		setup: []
-	};
-
-	// since Epiphany v0.7.0 all templates should be in the same directory, tcb-gulp
-	// handles this. If you want Epiphany to fetch templates from multiple locations
-	// set options.fetchTemplates to true
-	if(options.fetchTemplates)
-		this.items.templates.unshift(__dirname + '/templates');
-
-	// remove all duplicate items
-	// RBNNOTE: What does this do? It returns without assigning to a var
-	// Also it does not remove duplicate items but removes falsey values
-	_.mapValues(this.items, function(val) {
-		return _.compact(val);
-	});
-
-	_.each(options.modules, function(module) {
-		_app.module(module);
-	});
-
-	// add mw, config and what not from
-	this.module(options, true);
-
-	// setup express
-	this.server = require('./express-setup')(this.config);
-
-	// load all models into mongoose instance (reachable through require('mongoose').model('ModelName'))
-	loaders.mongoose(this.items.models, this.items.plugins, this.items.schemas, this);
-
-	this.mw = loaders.middleware(this.items.mw, this.config);
-
-	dust.templates = loaders.templates(this.items.templates);
-
-	// pages need to be loaded after templates, mw so loader can ensure existence of page template, mw
-	var result = loaders.pages(this.items.pages, this);
-
-	this.pages = result.pages;
-	this.navigation = result.navigation;
-
-	this.items.routes.splice(1,0, result.routes);
-
-	this.routes = loaders.routes(this.items.routes, this.mw, this);
+	}, requireDir('./middleware', { camelcase: true }));
 
 	// set up default prewares
 	this.prewares = [
-		this.mw.static,
-		this.mw.uploads,
-		this.mw.bodyParser,
-		this.mw.cookieParser,
-		this.mw.session,
-		this.mw.pre
+		this.middleware.static,
+		this.middleware.uploads,
+		this.middleware.bodyParser,
+		this.middleware.cookieParser,
+		this.middleware.session,
+		this.middleware.pre
 	];
 
-	if(ENV === 'development') {
+	// TODO should this be active in staging?
+	if(ENV !== 'production') {
 		this.prewares.unshift(require('morgan')('dev'));
 	}
 
 	// set up default postwares
 	this.postwares = [
-		this.mw.ensureFound,
+		this.middleware.ensureFound,
 		// transform and log error
-		this.mw.errorHandler,
+		this.middleware.errorHandler,
 		// respond
-		this.mw.responder,
+		this.middleware.responder,
 		// handle error rendering error
-		function(err, req, res, next) {
-			// TODO pretty print
-			console.error('[!!!] ERROR IN RESPONDER');
-			console.error(err);
-
-			if(err)
-				console.error(colorizeStack(err.stack));
-
-			if(res.locals.error) {
-				console.error('[!!!] ORIGINAL ERROR');
-				console.error(_.omit(res.locals.error, 'stack'));
-
-				if(res.locals.error.stack)
-					console.error(ENV === 'development' ? formatStack(res.locals.error.stack) : res.locals.error.stack);
-			}
-			res.send((res.locals.error || err) + '');
-		}
+		this.middleware.responderError
 	];
 
-	this.items.setup.forEach(function(fnc) {
-		fnc(_app);
-	});
+	loaders.templates(this.config.dir.templates);
+
+	this.routes = require('./routes');
+
+	_.each([ options ].concat(options.modules), function(module) {
+		this.module(module);
+	}, this);
+
+	var obj = loaders.pages(options.pages);
+
+	this.routes = this.routes.concat(obj.routes);
+
+	_.merge(this, _.omit(obj, 'routes'));
+
 
 	if(options.start !== false) this.start();
 
@@ -195,107 +112,66 @@ function ware(type, newWare, method, ref) {
 }
 
 Epiphany.prototype.module = function(module, last) {
-	var _app = this;
-
-	if(_.isString(module)) 
-		module = require(/\.\//.test(module) ? p.join(PWD, module) : module);
-
 	// pick (order matters!)
 	var props = [
-			'models',
-			'mw',
-			'navigation',
-			'pages',
-			'plugins',
-			'routes',
-			'schemas',
-			'setup',
+		'models',
+		'middleware',
+		'routes',
 	];
 
-	if(this.options.fetchTemplates)
-		props.push('templates');
-	
 	_.each(_.pick(module, props), function(value, key) {
-		// splice at index -1 to make sure PWD/server/ items are always last and are able
-		// to override anything set by epiphany or components
-		var items = _app.items[key];
-		if(last || items.length === 0)
-			items.push(value);
+		if(_.isArray(this[key]))
+			this[key] = this[key].concat(value);
 		else
-			items.splice(-1, 0, value);
-	});
+			_.extend(this[key], value);
+	}, this);
 
 	_.merge(dust, _.pick(module, 'filters', 'helpers'));
 };
 
 Epiphany.prototype.start = function() {
-	var _app = this;
-
-	_app.server.locals.lang = process.env.NODE_LANG || 'en';
+	this.server.locals.lang = process.env.NODE_LANG || 'en';
 
 	var jsFile = p.join(PWD, 'public/js.json');
 
 	if(fs.existsSync(jsFile))
-		_app.server.locals.js = require(jsFile);
+		this.server.locals.js = require(jsFile);
 
 	var cssFile = p.join(PWD, 'public/css.json');
 
 	if(fs.existsSync(cssFile))
-		_app.server.locals.css = require(cssFile);
+		this.server.locals.css = require(cssFile);
 
-	this.prewares.forEach(function(mw, i) {
-		if(_.isArray(mw) && _.isString(mw[0]))
-			_app.server.use(mw[0], mw[1]);
+	this.prewares.forEach(function(middleware, i) {
+		if(_.isArray(middleware) && _.isString(middleware[0]))
+			this.server.use(middleware[0], middleware[1]);
 		else
-			_app.server.use(mw);
+			this.server.use(middleware);
 
-	});
+	}, this);
 
-	// sort routes by name, make ':' & '*' routes be placed behind all the others.
-	this.routes = _.object(_.sortBy(_.pairs(this.routes), function(pair) { 
-		return pair[0].split(':').join('zzzy').split('*').join('zzzz');
-	}));
+	_.each(this.routes, function(arr) {
+		var path = arr[0],
+			method = arr[1],
+			middleware = arr[2];
 
-	var afters = [];
-
-	_.each(this.routes, function(route, path) {
-		// ensure all middlewares are functions
-		_.each(route, function(mw, method) {
-			if(!_.isFunction(mw) && (_.isEmpty(mw) || _.some(mw, function(value) { return !_.isFunction(value); }))) {
-				throw new Error('Undefined or non-function as middleware for [' + method + ']:' + path);
-			}
-		});
-
-		afters.forEach(function(after, i) {
-			if(path.indexOf(after[0]) !== 0) {
-				_app.server.use(after[0], after[1]);
-				afters.splice(i, 1);
-			}
-		});
-
-		if(route.before) {
-			_app.server.use(path, route.before);
+		if(!_.isFunction(middleware) && (_.isEmpty(middleware) || _.some(middleware, function(value) { return !_.isFunction(value); }))) {
+			console.log(arr);
+			throw new Error('Undefined or non-function as middleware for [' + method + ']:' + path);
 		}
 
-		_.each(_.omit(route, [ 'before', 'after' ]), function(mw, method) {
-			_app.server[method](path, mw);
-		});
-
-		if(route.after) {
-			afters.push([ path, route.after ]);
-		}
-	});
+		this.server[method](path, middleware);
+	}, this);
 
 	// initialize postwares (from old setPost)
-	this.postwares.forEach(function(mw) {
-		_app.server.use(mw);
-	});
+	this.postwares.forEach(function(middleware) {
+		this.server.use(middleware);
+	}, this);
 
 	// start server and let them know it
 	this.server.listen(this.config.port); 
-	console.info('Express server started on port %s (%s)', this.config.port, ENV);
 
-	this._listening = true;
+	console.info('Express server started on port %s (%s)', this.config.port, ENV);
 };
 
 module.exports = Epiphany;

@@ -1,3 +1,6 @@
+// modules > native
+var p = require('path');
+
 // modules > 3rd party
 var chalk = require('chalk');
 var debug = require('debug')('epiphany:errorHandler');
@@ -9,18 +12,15 @@ var formatError = require('./format-error');
 // string added to all errors logged to console
 var prefix = '[' + chalk.red('EE') + ']: ';
 
-var _config;
+var _config = require(p.join(PWD, 'server/config/error-handler')).log;
 
-function logError(error, req, config) {
+var ErrorModel = require('../models/error');
+
+module.exports = function logError(error, req, config) {
 	config = _.defaults(config || {}, _config);
 
 	if(config.format !== false)
 		error = formatError(error, req);
-
-	var ErrorModel;
-
-	if(config.database) 
-		ErrorModel = require('mongoose').model('Error');
 
 	if(config.ignore.indexOf(error.status) < 0) {
 		if(config.console) {
@@ -48,10 +48,4 @@ function logError(error, req, config) {
 			});
 		}
 	}
-}
-
-logError.setConfig = function(config) {
-	_config = config;
 };
-
-module.exports = logError;

@@ -6,30 +6,27 @@ var fs = require('fs');
 var format = require('../util/format-error');
 var log = require('../util/log-error');
 
-module.exports = function (config) {
-	config = config.errorHandler ? config.errorHandler : config;
+var config = require(p.join(PWD, 'server/config/error-handler'));
 
-	return function (error, req, res, next) {
+module.exports = function errorHandler(error, req, res, next) {
+	error = format(error, req, { format: false });
 
-		error = format(error, req, { format: false });
-
-		if (error.status == 401 && !req.user && !req.xhr && req.accepts('html', 'json') == 'html') {
-			req.session.lastPath = req.path;
-			return res.redirect('/login');
-		}
+	if (error.status == 401 && !req.user && !req.xhr && req.accepts('html', 'json') == 'html') {
+		req.session.lastPath = req.path;
+		return res.redirect('/login');
+	}
 
 
-		log(error, req);
+	log(error, req);
 
-		res.status(error.status);
+	res.status(error.status);
 
-		error.toJSON = function() {
-			var properties = config.mystify.properties;
-			return _.pick(this, properties);
-		};
-
-		res.data = { error: error };
-
-		next();
+	error.toJSON = function() {
+		var properties = config.mystify.properties;
+		return _.pick(this, properties);
 	};
+
+	res.data = { error: error };
+
+	next();
 };

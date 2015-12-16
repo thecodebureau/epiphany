@@ -23,7 +23,7 @@ if(symlinked)
 appModulePath.addPath(p.join(process.env.PWD, 'modules'));
 
 // make lodash global
-global._ = require('lodash');
+global._ = global._ || require('lodash');
 
 var colorizeStack = require('./util/colorize-stack');
 

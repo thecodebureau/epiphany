@@ -1,26 +1,26 @@
-module.exports = function(config, mongoose) {
-	return function pre(req, res, next) {
-		res.data = {};
+var mongoose = require('mongoose');
 
-		if(!req.xhr) {
-			res.locals.user = req.user;
-		}
+module.exports = function pre(req, res, next) {
+	res.data = {};
 
-		if (ENV === 'development' && global.LOGIN_USER && !req.user) {
-			var User = mongoose.model('User');
+	if(!req.xhr) {
+		res.locals.user = req.user;
+	}
 
-			User.findOne({ email: LOGIN_USER }, function (err, user) {
+	if (ENV === 'development' && global.LOGIN_USER && !req.user) {
+		var User = mongoose.model('User');
+
+		User.findOne({ email: LOGIN_USER }, function (err, user) {
+			if (err) return next(err);
+
+			req.login(user, function (err) {
 				if (err) return next(err);
-
-				req.login(user, function (err) {
-					if (err) return next(err);
-					
-					next();
-				});
+				
+				next();
 			});
-		} else {
-			next();
-		}
+		});
+	} else {
+		next();
+	}
 
-	};
 };
