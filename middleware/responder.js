@@ -10,6 +10,9 @@ module.exports = function responder(req, res, next) {
 		html: function () {
 			debug('ACCEPTS html, returning html');
 
+			res.locals.INITIAL_STATE = JSON.stringify(res.locals);
+			res.locals.CONTEXT = JSON.stringify(res.app.locals);
+
 			res.render(res.master || 'master');
 		},
 
@@ -28,6 +31,9 @@ module.exports = function responder(req, res, next) {
 
 				if(obj.dependencies) templates = templates.concat(dust.dependencies(template));
 
+				//res.json(_.extend({
+				//	compiled: _.map(templates, dust.compiled, dust),
+				//}, res.locals);
 				res.json(_.extend({
 					template: template,
 					compiled: _.map(templates, dust.compiled, dust),
