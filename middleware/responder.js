@@ -10,7 +10,10 @@ module.exports = function responder(req, res, next) {
 		html: function () {
 			debug('ACCEPTS html, returning html');
 
-			res.locals.INITIAL_STATE = JSON.stringify(res.locals);
+			res.locals.INITIAL_STATE = JSON.stringify(_.extend({ 
+				id: decodeURI(req.originalUrl),
+			}, res.locals));
+
 			res.locals.CONTEXT = JSON.stringify(res.app.locals);
 
 			res.render(res.master || 'master');
