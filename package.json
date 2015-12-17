@@ -24,7 +24,7 @@
   "homepage": "https://github.com/thecodebureau/epiphany",
   "dependencies": {
     "app-module-path": "^1.0.5",
-    "body-parser": "^1.14.1",
+    "body-parser": "^1.14.2",
     "chalk": "^1.1.1",
     "connect-redis": "^3.0.1",
     "cookie-parser": "^1.4.0",
@@ -32,11 +32,10 @@
     "debug": "^2.2.0",
     "express": "^4.13.3",
     "express-session": "^1.12.1",
-    "html-minifier": "^1.0.0",
     "lodash": "^3.10.1",
-    "mongoose": "^4.2.9",
+    "mongoose": "^4.3.2",
     "morgan": "^1.6.1",
-    "nodemailer": "^1.4.0",
+    "nodemailer": "^1.10.0",
     "require-dir": "^0.3.0"
   }
 }
