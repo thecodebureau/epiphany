@@ -21,7 +21,7 @@ module.exports = function(config) {
 	if(ENV === 'development')
 		server.set('trust proxy', true);
 
-	if(ENV !== 'production')
+	//if(ENV !== 'production')
 		dust.config.whitespace = true;
 
 	return server;
