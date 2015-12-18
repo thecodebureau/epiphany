@@ -12,6 +12,7 @@ var warningPrefix = '[' + chalk.yellow('!!') + '] ';
 
 var isWin = /^win/.test(process.platform);
 
+var pageMiddleware = require('./middleware/page');
 module.exports = {
 	templates: function(directory) {
 		function recurse(file) {
@@ -114,19 +115,7 @@ module.exports = {
 						}
 					}
 
-					var middleware = _.compact(prewares.concat(Object.defineProperty(function(req, res, next) {
-						// we need routePath mainly so that we can use ie news/:id to set content in hats/content
-						var pageClone = _.clone(page);
-						pageClone.routePath = pageClone.path;
-						pageClone.path = req.path;
-						res.locals.page = pageClone;
-
-						res.locals.navigation = navigation[key];
-
-						res.locals.template = pageClone.template;
-
-						next();
-					}, 'name', { value: 'page' }), page.middleware, postwares));
+					var middleware = prewares.concat(pageMiddleware(page, navigation[key], nav), page.middleware || [], postwares);
 
 					delete page.middleware;
 
