@@ -11,20 +11,14 @@ var config = require(p.join(PWD, 'server/config/error-handler'));
 module.exports = function errorHandler(error, req, res, next) {
 	error = format(error, req, { format: false });
 
-	if (error.status == 401 && !req.user && !req.xhr && req.accepts('html', 'json') == 'html') {
-		req.session.lastPath = req.path;
-		return res.redirect('/login');
-	}
-
-
 	log(error, req);
 
-	res.status(error.status);
-
+	// limit what properties are sent to the client by overriding toJSON().
 	error.toJSON = function() {
-		var properties = config.mystify.properties;
-		return _.pick(this, properties);
+		return _.pick(this, config.mystify.properties);
 	};
+
+	res.status(error.status);
 
 	res.data = { error: error };
 
