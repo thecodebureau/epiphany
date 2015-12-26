@@ -12,7 +12,7 @@ module.exports = function responderError(err, req, res, next) {
 		console.error(_.omit(res.locals.error, 'stack'));
 
 		if(res.locals.error.stack)
-			console.error(ENV === 'development' ? formatStack(res.locals.error.stack) : res.locals.error.stack);
+			console.error(ENV === 'development' ? colorizeStack(res.locals.error.stack) : res.locals.error.stack);
 	}
 	res.send((res.locals.error || err) + '');
 };
