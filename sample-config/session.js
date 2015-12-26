@@ -1,3 +1,5 @@
+var chalk = require('chalk');
+
 var redisStore;
 
 var config = {

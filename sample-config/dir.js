@@ -8,5 +8,5 @@ module.exports = {
 	schemas: p.join(PWD, 'server', 'schema.org'),
 	static: p.join(PWD, 'public'),
 	templates: p.join(PWD, 'public', 'uncompiled-templates'),
-	uploads: p.join(PWD, 'server', 'uploads')
+	uploads: p.join(PWD, 'uploads')
 };

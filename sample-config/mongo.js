@@ -1,10 +1,10 @@
 var defaults = {
-	uri: 'mongodb://energymanSupreme:energize--the-management@mongo.thecodebureau.com/energyman' 
-	//uri: 'mongodb://localhost/energyman' 
+	uri: 'mongodb://user:pass@mongo.thecodebureau.com/example' 
+	//uri: 'mongodb://localhost/example' 
 };
 
 module.exports = _.merge(defaults, {
 	//production: {
-	//	uri: 'mongodb://localhost/liverpooltravel' 
+	//	uri: 'mongodb://user:pass@localhost/example' 
 	//}
 });

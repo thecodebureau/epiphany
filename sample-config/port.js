@@ -1,4 +1,4 @@
-var basePort = 4080;
+var basePort = 10000;
 
 module.exports = {
 	development: basePort,

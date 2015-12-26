@@ -1,8 +1,8 @@
-var domain = 'energymanagement.se';
+var domain = 'example.com';
 
 var defaults = {
-	title: 'Energymanagement',
-	name: 'energymanagement',
+	title: 'Example Site',
+	name: 'example',
 	protocol: 'http',
 	get host() {
 		return this.port ? this.hostname + ':' + this.port : this.hostname;
@@ -27,6 +27,6 @@ module.exports = _.merge(defaults, {
 	},
 
 	production: {
-		hostname: 'staging.'+  domain
+		hostname: domain
 	}
 }[ENV]);
