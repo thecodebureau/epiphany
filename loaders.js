@@ -68,10 +68,12 @@ module.exports = {
 	pages: function(pageCollections) {
 		var navigation = {};
 		var routes = [];
-		var paths = [];
+		var paths = {};
 
 		_.each(pageCollections, function(pages, key) {
 			var rootPath = key === 'public' ? '' : key + '/';
+
+			paths[key] = [];
 
 			var prewares = pages.pre || [];
 			var postwares = pages.post || [];
@@ -121,7 +123,7 @@ module.exports = {
 
 					routes.push([ page.path, page.method || 'get', middleware ]);
 
-					paths.push(page.path);
+					paths[key].push(page.path);
 
 					// return an object consisting only of the properties required by
 					// the navigation templates

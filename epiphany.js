@@ -32,7 +32,7 @@ var Epiphany = function(options) {
 	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
 
 	// setup express
-	this.server = require('./express-setup')(this.config);
+	this.express = require('./express-setup')(this.config);
 
 	this.middleware = _.merge({
 		static: express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
@@ -81,7 +81,7 @@ var Epiphany = function(options) {
 	this.routes = this.routes.concat(obj.routes);
 
 	_.merge(this, _.omit(obj, 'routes'));
-
+	_.merge(this.express, _.omit(obj, 'routes'));
 
 	if(options.start !== false) this.start();
 
@@ -112,7 +112,6 @@ function ware(type, newWare, method, ref) {
 }
 
 Epiphany.prototype.module = function(module, last) {
-	// pick (order matters!)
 	var props = [
 		'models',
 		'middleware',
@@ -130,23 +129,23 @@ Epiphany.prototype.module = function(module, last) {
 };
 
 Epiphany.prototype.start = function() {
-	this.server.locals.lang = process.env.NODE_LANG || 'en';
+	this.express.locals.lang = process.env.NODE_LANG || 'en';
 
 	var jsFile = p.join(PWD, 'public/js.json');
 
 	if(fs.existsSync(jsFile))
-		this.server.locals.js = require(jsFile);
+		this.express.locals.js = require(jsFile);
 
 	var cssFile = p.join(PWD, 'public/css.json');
 
 	if(fs.existsSync(cssFile))
-		this.server.locals.css = require(cssFile);
+		this.express.locals.css = require(cssFile);
 
 	this.prewares.forEach(function(middleware, i) {
 		if(_.isArray(middleware) && _.isString(middleware[0]))
-			this.server.use(middleware[0], middleware[1]);
+			this.express.use(middleware[0], middleware[1]);
 		else
-			this.server.use(middleware);
+			this.express.use(middleware);
 
 	}, this);
 
@@ -160,16 +159,16 @@ Epiphany.prototype.start = function() {
 			throw new Error('Undefined or non-function as middleware for [' + method + ']:' + path);
 		}
 
-		this.server[method](path, middleware);
+		this.express[method](path, middleware);
 	}, this);
 
 	// initialize postwares (from old setPost)
 	this.postwares.forEach(function(middleware) {
-		this.server.use(middleware);
+		this.express.use(middleware);
 	}, this);
 
 	// start server and let them know it
-	this.server.listen(this.config.port); 
+	this.express.listen(this.config.port); 
 
 	console.info('Express server started on port %s (%s)', this.config.port, ENV);
 };
