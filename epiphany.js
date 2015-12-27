@@ -49,8 +49,7 @@ var Epiphany = function(options) {
 		this.middleware.uploads,
 		this.middleware.bodyParser,
 		this.middleware.cookieParser,
-		this.middleware.session,
-		this.middleware.pre
+		this.middleware.session
 	];
 
 	// TODO should this be active in staging?

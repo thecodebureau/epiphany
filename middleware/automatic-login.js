@@ -1,12 +1,12 @@
 var mongoose = require('mongoose');
 
+/* Middleware simply for simplying when in development
+ * mode so that you do not have to re-login everytime the
+ * node server reboots. set global.LOGIN_USER to the user you wish
+ * to automatically login as.
+ */
+
 module.exports = function pre(req, res, next) {
-	res.data = {};
-
-	if(!req.xhr) {
-		res.locals.user = req.user;
-	}
-
 	if (ENV === 'development' && global.LOGIN_USER && !req.user) {
 		var User = mongoose.model('User');
 
@@ -22,5 +22,4 @@ module.exports = function pre(req, res, next) {
 	} else {
 		next();
 	}
-
 };
