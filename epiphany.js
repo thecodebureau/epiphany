@@ -15,7 +15,8 @@ var session = require('express-session');
 var cookieParser = require('cookie-parser');
 
 // modules > internal
-var loaders = require('./loaders');
+var loadTemplates = require('./load-templates');
+var loadPages = require('./load-pages');
 var logError = require('./util/log-error');
 
 // extend dust and mongoose
@@ -68,7 +69,7 @@ var Epiphany = function(options) {
 		this.middleware.responderError
 	];
 
-	loaders.templates(this.config.dir.templates);
+	loadTemplates(this.config.dir.templates);
 
 	this.routes = require('./routes');
 
@@ -76,7 +77,7 @@ var Epiphany = function(options) {
 		this.module(module);
 	}, this);
 
-	var obj = loaders.pages(options.pages);
+	var obj = loadPages(options.pages);
 
 	this.routes = this.routes.concat(obj.routes);
 
@@ -155,7 +156,6 @@ Epiphany.prototype.start = function() {
 			middleware = arr[2];
 
 		if(!_.isFunction(middleware) && (_.isEmpty(middleware) || _.some(middleware, function(value) { return !_.isFunction(value); }))) {
-			console.log(arr);
 			throw new Error('Undefined or non-function as middleware for [' + method + ']:' + path);
 		}
 
