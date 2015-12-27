@@ -1,5 +1,5 @@
 module.exports = function ensureFound(req, res, next) {
-	if (res.locals.template || _.some(res.data)) {
+	if (res.template || _.some(res.locals)) {
 		next();
 	} else {
 		// generates Not Found error if there is no page to render and no truthy values in data

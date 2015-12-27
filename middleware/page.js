@@ -1,14 +1,18 @@
+var dust = require('dustjs-linkedin');
+
 module.exports = function(page, navigation, subnavigation) {
 	return Object.defineProperty(function(req, res, next) {
+		res.locals.page = _.defaults({
+			routePath: page.path,
+			path: req.path
+		}, page);
 
-		var pageClone = _.clone(page);
-		pageClone.routePath = pageClone.path;
-		pageClone.path = req.path;
-		res.locals.page = pageClone;
-
-		res.locals.navigation = navigation;
-
-		res.locals.template = pageClone.template;
+		if(req.xhr) {
+			res.locals.compiled = _.map(page.templates, dust.compiled, dust);
+		} else {
+			res.locals.user = req.user;
+			res.locals.navigation = navigation;
+		}
 
 		next();
 	}, 'name', { value: 'page' });
