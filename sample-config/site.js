@@ -1,6 +1,7 @@
 var domain = 'example.com';
 
 var defaults = {
+	domain: domain,
 	title: 'Example Site',
 	name: 'example',
 	protocol: 'http',
@@ -9,6 +10,11 @@ var defaults = {
 	},
 	get url () {
 		return this.protocol + '://' + this.host + '/';
+	},
+	emails: {
+		robot: 'no-reply@thecodebureau.com',
+		info: 'info@thecodebureau.com',
+		webmaster: 'webmaster@thecodebureau.com',
 	}
 };
 
@@ -27,6 +33,11 @@ module.exports = _.merge(defaults, {
 	},
 
 	production: {
-		hostname: domain
+		hostname: domain,
+		emails: {
+			robot: 'no-reply@' + domain,
+			info: 'info@' + domain,
+			webmaster: 'webmaster@' + domain,
+		}
 	}
 }[ENV]);
