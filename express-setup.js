@@ -1,28 +1,38 @@
 // modules > 3rd party
-var express = require('express');
+var _ = require('lodash');
 var dust = require('dustjs-linkedin');
 
-var server = express();
+var server = require('express')();
 
-// overrides express render function
-require('./express-overrides')(server);
+/* prevent express from looking up the view in the file system
+ * since we are using dust.cache (dust.cache should be populated
+ * in load-templates.js).
+ */
+server.get('view').prototype.lookup = function(name) {
+	// remove extension
+	name = name.replace(/\..*$/, '');
 
-module.exports = function(config) {
-	// set up dust templating
-	server.engine('dust', function(name, options, fn) {
-		dust.render(name, _.omit(options, 'settings', '_locals'), fn);
-	});
-	server.set('view engine', 'dust');
-	server.set('views', config.dir.templates);
-
-	// preserve whitespaces development mode. in production mode, most
-	// minifying is done by html-minifier in loaders.js, so we
-	// don't have to worry about whitespaces
-	if(ENV === 'development')
-		server.set('trust proxy', true);
-
-	//if(ENV !== 'production')
-		dust.config.whitespace = true;
-
-	return server;
+	return dust.cache[name] ? name : undefined;
 };
+
+server.engine('dust', function(name, options, fn) {
+	dust.render(name, _.omit(options, 'settings', '_locals'), fn);
+});
+
+server.set('view engine', 'dust');
+
+/* Templates are compiled and cached on startup,
+ * so always let Express do its caching as well
+ */
+server.set('view cache', true);
+
+// cannot remember what this is for
+if(ENV === 'development')
+	server.set('trust proxy', true);
+
+/* Dust dust very bad minifying, mercilessly concatting different
+ * text rows, so we need to set conserve whitespaces.
+ */
+dust.config.whitespace = true;
+
+module.exports = server;

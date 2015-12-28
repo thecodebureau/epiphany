@@ -7,7 +7,6 @@ var dust = require('dustjs-linkedin');
 var chalk = require('chalk');
 var express = require('express');
 var mongoose = require('mongoose');
-var requireDir = require('require-dir');
 
 // modules > express middlewares
 var bodyParser = require('body-parser');
@@ -17,39 +16,24 @@ var cookieParser = require('cookie-parser');
 // modules > internal
 var loadTemplates = require('./load-templates');
 var loadPages = require('./load-pages');
-var logError = require('./util/log-error');
 
-// extend dust and mongoose
+// extend dust
 require('./dust-extensions');
 
-
 var Epiphany = function(options) {
-	options = options || {};
-
-	// load configuration
-	this.config = _.merge(requireDir(p.join(PWD, '/server/config'), { camelcase: true }), options.config );
-
-	// connect to mongodb
-	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
+	this.config = options.config;
 
 	// setup express
-	this.express = require('./express-setup')(this.config);
-
-	this.middleware = _.merge({
-		static: express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
-		uploads: express.static(this.config.dir.uploads, ENV === 'production' ? { maxAge: '1 year' } : null),
-		bodyParser: [ bodyParser.json(), bodyParser.urlencoded({ extended:true }) ],
-		cookieParser: cookieParser(),
-		session: session(this.config.session)
-	}, requireDir('./middleware', { camelcase: true }));
+	this.express = require('./express-setup');
 
 	// set up default prewares
 	this.prewares = [
-		this.middleware.static,
-		this.middleware.uploads,
-		this.middleware.bodyParser,
-		this.middleware.cookieParser,
-		this.middleware.session
+		express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
+		express.static(this.config.dir.uploads, ENV === 'production' ? { maxAge: '1 year' } : null),
+		bodyParser.json(),
+		bodyParser.urlencoded({ extended:true }),
+		cookieParser(),
+		session(this.config.session)
 	];
 
 	// TODO should this be active in staging?
@@ -59,88 +43,47 @@ var Epiphany = function(options) {
 
 	// set up default postwares
 	this.postwares = [
-		this.middleware.ensureFound,
+		require('./middleware/ensure-found'),
 		// transform and log error
-		this.middleware.errorHandler,
+		require('./middleware/error-handler'),
 		// respond
-		this.middleware.responder,
+		require('./middleware/responder'),
 		// handle error rendering error
-		this.middleware.responderError
+		require('./middleware/responder-error'),
 	];
 
 	loadTemplates(this.config.dir.templates);
 
-	this.routes = require('./routes');
+	this.routes = [
+		[ '/templates/*', 'get', require('./middleware/templates') ]
+	];
 
-	_.each([ options ].concat(options.modules), function(module) {
-		this.module(module);
-	}, this);
+	_.each([ options ].concat(options.modules), this.module, this);
 
-	var obj = loadPages(options.pages);
+	_.merge(this, loadPages(options.pages), function(a, b) {
+		if (_.isArray(a)) {
+			return a.concat(b);
+		}
+	});
 
-	this.routes = this.routes.concat(obj.routes);
-
-	_.merge(this, _.omit(obj, 'routes'));
-	_.merge(this.express, _.omit(obj, 'routes'));
+	/* paths on express instance below is currently only used by hats/content
+	 * paths middleware.
+	 */
+	_.merge(this.express, _.pick(this, 'paths'));
 
 	if(options.start !== false) this.start();
 
 	return this;
 };
 
-Epiphany.prototype.preware = function(newPreware, method, reference) {
-	ware.apply(this, [ 'prewares' ].concat(_.toArray(arguments)));
-};
-
-Epiphany.prototype.postware = function(newPreware, method, reference) {
-	ware.apply(this, [ 'postwares' ].concat(_.toArray(arguments)));
-};
-
-function ware(type, newWare, method, ref) {
-	var arr = this[type];
-
-	method = method || 'push';
-	if(method === 'before' || method === 'after') {
-		var index = arr.indexOf(ref);
-
-		if(index < 0) 
-			throw new Error('Reference element not found!');
-
-		arr.splice(method === 'before' ? index : index + 1, 0, newWare);
-	} else 
-		arr[method](newWare);
-}
-
 Epiphany.prototype.module = function(module, last) {
-	var props = [
-		'models',
-		'middleware',
-		'routes',
-	];
-
-	_.each(_.pick(module, props), function(value, key) {
-		if(_.isArray(this[key]))
-			this[key] = this[key].concat(value);
-		else
-			_.extend(this[key], value);
-	}, this);
+	if(module.routes)
+		this.routes = this.routes.concat(module.routes);
 
 	_.merge(dust, _.pick(module, 'filters', 'helpers'));
 };
 
 Epiphany.prototype.start = function() {
-	this.express.locals.lang = process.env.NODE_LANG || 'en';
-
-	var jsFile = p.join(PWD, 'public/js.json');
-
-	if(fs.existsSync(jsFile))
-		this.express.locals.js = require(jsFile);
-
-	var cssFile = p.join(PWD, 'public/css.json');
-
-	if(fs.existsSync(cssFile))
-		this.express.locals.css = require(cssFile);
-
 	this.prewares.forEach(function(middleware, i) {
 		if(_.isArray(middleware) && _.isString(middleware[0]))
 			this.express.use(middleware[0], middleware[1]);
@@ -166,10 +109,13 @@ Epiphany.prototype.start = function() {
 		this.express.use(middleware);
 	}, this);
 
-	// start server and let them know it
-	this.express.listen(this.config.port); 
+	// connect to mongodb
+	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
 
-	console.info('Express server started on port %s (%s)', this.config.port, ENV);
+	// start server and let them know it
+	this.express.listen(this.config.port, function() {
+		console.info('Express server started on port %s (%s)', this.config.port, ENV);
+	}.bind(this));
 };
 
 module.exports = Epiphany;

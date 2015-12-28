@@ -22,12 +22,8 @@ if(symlinked)
 
 appModulePath.addPath(p.join(process.env.PWD, 'modules'));
 
-// make lodash global
-global._ = global._ || require('lodash');
-
 var colorizeStack = require('./util/colorize-stack');
 
-var chalk = require('chalk');
 // make error output stack pretty
 process.on('uncaughtException', function (err) {
 	// TODO Node natively seems to get the line and outputs it before the stack
