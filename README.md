@@ -1,248 +1,140 @@
-# epiphany
+# Epiphany
 
-I just got one.
+## Etymology
+
+Simply due lack of a better name 'Epiphany' was chosen. It has no meaning and is
+pretty ambiguous. Sorry.
 
 ## Introduction
 
-This is a library that aims to greatly simplify the creation
-of Node & Express servers. You have to use:
+Epiphany is a library that aims to greatly speed up the creation
+of simple websites with Node & Express. Epiphany is
+the result of realising the only important thing for an Express
+server is its routes. Thus, Epiphany intends to simplify setting up routes.
+
+On top of basic Express setup Epiphany contains predefined middleware that can be
+required and used at will. It also contains several schemas for quick
+implementation of database models follwing schema.org specifications.
+
+Epiphany is currently intended to be used with:
 
 1. Node & NPM
 2. Express
 3. MongoDB & Mongoose
 4. DustJS templates (from LinkedIn)
 
-## Components
+## Require paths
 
-We essentially define the 5 components of an Epiphany server to be:
+In `index.js`, the `/modules` directory in the root project is added (using
+[app-module-path](https://www.npmjs.com/package/app-module-path)]) to the array
+of paths search for node modules in `require()`. This is to make it easier
+to require modules from both Node and Browserify (the same path should thus also
+be added to your Browserify/Web-pack config).
 
-1. Configurations
-2. Mongoose entities (plugins, schemas & models
-3. Express Middleware
-4. Express Routes
-5. Dust Templates
+## Globals
 
-This is it. You load all your components simply by telling Epiphany where they
-are located (which directory). They can be located in different locations.
-Epiphany has a property `directories` where it keeps arrays of locations of all
-components. These directories are used by the loaders.
+Epiphany will setup two globals if they are not already set, namely PWD and ENV.
 
-## The loaders
+## Initializing
 
-All components are loaded using Epiphany's loaders. The loaders are called
-internally in Epiphany.prototype.init with the appropriate array from `directories`.
-If you want to add more directories before initializing, call the constructor with
-`{ init: false }`.
-
-The loaders use the directory structure to namespace the routes and middleware.
-Models are simply added to the mongoose instance, while Schemas are saved to an object
-that is passed to all model modules.
+If you want to edit the prewares and/or postwares (or anything else for that
+matter) before starting the Express instance, pass `{ start: false }` to the
+Epiphany constructor, then call `epiphany.start()` when you are ready.
 
 ## Configuration
 
-Configuration is set up slightly differently from the other components. While
-all other components are loaded during `init`, configuration is loaded in the
-constructor. Therefore, if you want to add more configuration locations you
-need to pass them to the constructor using `options.config`. This can be a
-single path string, or an array of path strings.  If not config path is passed,
-Epiphany will check for the existence of `PWD/server/config` and add it to the
-configuration locations array.
+There is a `/sample-config` directory that contains example configuration files.
+These should be copied into your project's `/server/config` directory and edited
+to suit your needs.
 
-Configuration with higher index in the array take precedence and overwrite
-previous properties if they exist.
+## Preware & Postware
 
-## Schemas & Models
-
-Schemas are schema.org templates. They are passed to other schema files
-and the model files.
-
-Example schema file (Person):
+Preware are middleware functions loaded before the routes, and postware is
+loaded after all route specific middleware. Both are path-less, ie they are 
+set up simply using
 
 ```
-module.exports = function(mongoose, schemas) {
-	return new mongoose.Schema({
-		_id: String,
-		"@context": { type: String, default: "http://schema.org" },
-		"@type": { type: String, default: "Person" },
-		address: schemas.PostalAddress.objectify(),
-		email: String,//Email address.
-		familyName: String,//Family name. In the U.S., the last name of an Person. This can be used along with givenName instead of the name property.
-		faxNumber: String,//The fax number.
-		gender: String,//Gender of the person.
-		givenName: String,//Given name. In the U.S., the first name of a Person. This can be used along with familyName instead of the name property.
-		jobTitle: String,//The job title of the person (for example, Financial Manager).
-		telephone: String,//The telephone number.
-		description: String,//A short description of the item.
-		image: schemas.ImageObject.objectify(),//	An image of the item. This can be a URL or a fully described ImageObject.
-	});
-};
+express.use([ middleware ]);
 ```
 
-Model files need to return a function that takes two parameters, `mongooose` and `schemas`.
-They should register the model on the mongoose instance. Since middleware's have access
-to mongoose, they can also fetch all models from that instance.
+The prewares and postwares can be edited by manipulating the `epiphany.prewares` and `epiphany.postwares`
+arrays respectively. This needs to be done before starting the Epiphany instance.
 
-All mongoose models should be extended with the Base schema, and have a `save`
-pre middleware that updates dateModified.
-
-Example model file:
+### Default prewares
 
 ```
-var _ = require('lodash');
-
-module.exports = function(mongoose, schemas) {
-	var PageSchema = new mongoose.Schema(_.defaults({
-		_id: String,
-		name: String,
-		content: {},
-		author: String,
-	}, schemas.Base.objectify()));
-
-	PageSchema.pre('save', function(next) {
-		if(!this.isNew) {
-			this.dateModified = Date.now();
-		}
-		next();
-	});
-
-	mongoose.model('Page', PageSchema);
-};
+this.prewares = [
+	express.static(this.config.dir.static, ENV === 'production' ? { maxAge: '1 year' } : null),
+	express.static(this.config.dir.uploads, ENV === 'production' ? { maxAge: '1 year' } : null),
+	bodyParser.json(),
+	bodyParser.urlencoded({ extended:true }),
+	cookieParser(),
+	session(this.config.session)
+];
 ```
 
-## Middleware
-
-All middleware files should return a function that takes two optional
-parameters, `config` and `mongoose`. That function should in turn return an
-object with middleware functions, or a single middleware function.
-
-Single middleware in one file:
+### Default postwares
 
 ```
-module.exports = function(config, mongoose) {
-  return function(req, res, next) {
-    res.send('secret/pron/stash');
-  };
-};
-```
-
-If this file was placed in `PWD/server/middleware/api/pron', it would namespace like this:
-
-```
-{
-	api: {
-		pron: [ Function ]
-	}
-}
-```
-
-Multiple middlewares in one file:
-
-```
-module.exports = function(config, mongoose) {
-  return {
-    index: function(req, res, next) {
-      res.send('secret/pron/stash');
-    },
-    ballsack1: function(req, res, next) {
-      res.send('secret/pron/stash');
-    },
-    anotherBallsack: function(req, res, next) {
-      res.send('secret/pron/stash');
-    }
-  };
-};
-```
-
-If this file was placed in `PWD/server/middleware/boo/far', it would namespace like this:
-
-```
-{
-	boo: {
-		far: {
-			index: [ Function ],
-			ballsack1: [ Function ],
-			anotherBallsack: [ Function ]
-		}
-	}
-}
+this.postwares = [
+	require('./middleware/ensure-found'),
+	require('./middleware/error-handler'),
+	require('./middleware/responder'),
+	require('./middleware/responder-error'),
+];
 ```
 
 ## Routes
 
-All route files should return an Array of routes, each route
-being a an array on it's own. Each route array contains the following
+A route is defined by an array with a path, an HTTP/Express method name and a middleware or 
+an array of middleware.
 
-1. The method (in lowercase)
-2. The path
-3. The middleware(s) (single or an Array)
-
-'use' middlewares usually need to be placed before or after the
-verb specific routes. Therefore, instead of saying 'use', you write
-'before' or 'after'.
-
-Sample route file:
+Example:
 
 ```
-module.exports = function(mw, config) {
-	return [
-		[ 'before', null, mw.authorization.isAuthenticated],
-		[ 'get', '/', mw.api.events.findAll ],
-		[ 'post', '/', mw.api.events.create ],
-		[ 'get', '/:id', mw.api.events.findById ],
-		[ 'put', '/:id', mw.api.events.update ],
-		[ 'delete', '/:id', mw.api.events.remove ],
-		[ 'after', null, mw.eventResponder ],
-	];
-};
+var routes = [
+	[ '/', 'get', mw.index ],
+	[ '/admin', 'get', [ mw.isAuthenticated, mw.admin ]
+];
 ```
 
-## Templates
-
-The template system in express has been overriden to use dust native functions for cache things.
-
-All dust templates use their path to generate their name.
-
-A template placed in `server/templates/partials/login-form` will be named `partials/login-form`.
-
-Epiphany also sets up a route that enables the fetching of compiled templates at `/templates/`.
-To fetch the previously mentioned template we would make a request to `/templates/partials/login-form`.
-The route returns the name of the fetched template, and an array of compiled templates with the template
-itself and all of its dependencies.
-
-At the Code Bureau we have set up Dust in the browser to automatically load templates from this
-route if it is not found in the cache. We do this with the following code:
+These are setup in `epiphany.start()` with
 
 ```
-dust.onLoad = function(name, callback) {
-	// callback is a function provided by dust.
-	// run console.log(callback.toString()) if you are interested in it's contents.
-	function notFound() {
-		callback(new Error('Template Not Found: ' + name));
+var path = arr[0],
+	method = arr[1],
+	middleware = arr[2];
+
+this.express[method](path, middleware);
+```
+
+## Modules
+
+One can use `epiphany.module(module)` to easily extend Epiphany. An Epiphany
+module is simply a plain object containing an array of routes, dust filters and/or
+dust helpers.
+
+Example module:
+
+```
+modul.exports = {
+	routes: [
+		[ '/ball-sack', 'get', mw.fetchBallSack ]
+	],
+	filters: {
+		camelCase: function(value) {
+			return _.camelCase(value);
+		}
+	},
+	helpers: {
+		contains: function(chunk, context, bodies, params) {
+			return _.contains(params.array, params.value) ? chunk.render(bodies.block, context) : chunk;
+		}
 	}
-	// attempt to load the template using the templates route in Express.
-	$.ajax({
-		method: 'GET',
-		url: '/templates/' + name,
-		dataType: 'json',
-		success: function(res) {
-			// the templates route does not only return the specified temlate, but also
-			// all templates it depends on. They are placed in the res.compiled array.
-			if(res.compiled.length > -1) {
-				_.each(res.compiled, dust.loadSource);
-				// the specified template will always be the first item in the res.compiled array.
-				callback(null, res.compiled[0]);
-			} else {
-				notFound();
-			}
-		},
-		error: notFound
-	});
 };
 ```
 
-## Preware & Postware
-
-Preware is middleware loaded before the routes, and postware is loaded after the routes.
+Adding modules should always be done before starting the instance.
 
 ## Debugging
 
@@ -252,6 +144,65 @@ Epiphany (and most other server-side modules from TCB) uses the excellent
 To debug everything, simply set `DEBUG=epiphany` as an environment variable. To debug
 specific parts, set (for example) `DEBUG=epiphany:loaders`. Debuggable parts are currently:
 
-- epiphany:loaders
+- epiphany:loaders (template and page loading)
 - epiphany:errorhandler
 - epiphany:responder
+
+## Example server/server.js
+
+```
+// set up some globals (these are also set in Epiphany if not already set)
+global.ENV = process.env.NODE_ENV || 'development';
+global.PWD = process.env.PWD || process.cwd();
+
+// modules > native
+var p = require('path');
+
+// modules > 3rd party
+var requireDir = require('require-dir');
+var passport = require('passport');
+
+var server = new (require('epiphany'))({
+	config: requireDir('./config', { camelcase: true }),
+
+	pages: {
+		'/admin': require('./pages-admin'),
+		'/': require('./pages-public'),
+	},
+
+	routes: require('./routes'),
+
+	modules: [
+		require('dust-admin'),
+
+		// hats > hats
+		require('hats/membership'),
+		require('hats/contact'),
+		require('hats/content'),
+		require('hats/errors'),
+		require('hats/organization'),
+		require('hats/news'),
+		require('hats/employees'),
+		require('hats/image-upload'),
+	],
+
+	start: false,
+});
+
+// set up passport and membership prewares and postwares
+server.prewares.push(passport.initialize(), passport.session());
+server.postwares.unshift(require('hats/membership/middleware/authorization').redirectUnauthorized('/login'));
+
+if(ENV === 'development')
+	server.prewares.push(require('epiphany/middleware/automatic-login'));
+
+_.extend(server.express.locals, {
+	site: require('./config/site'),
+	lang: process.env.NODE_LANG || 'en'
+});
+
+// set organization from database to express.locals
+require('hats/organization/middleware').get(null, { app: server.express }, null);
+
+server.start();
+```
