@@ -23,8 +23,7 @@ if(ENV === 'production') {
 	});
 
 	redisStore.on('disconnect', function(){
-		console.error("[" + chalk.red('ERROR') + "]  Unable to connect to redis. Has it been started?"); 
-		process.exit(2);
+		throw new Error('Unable to connect to redis. Has it been started?');
 	});
 
 	config.store = redisStore;
