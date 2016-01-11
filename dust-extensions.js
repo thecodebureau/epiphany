@@ -12,6 +12,9 @@ function dependencies(template) {
 	return dust.template(template).dependencies;
 }
 
+/* Recurses through all templates dependencies
+ * to return a flattened array of template names.
+ */
 dust.dependencies = function(templates) {
 	if(!_.isArray(templates)) templates = [ templates ];
 
@@ -31,6 +34,8 @@ dust.dependencies = function(templates) {
 
 dust.template = function(templateName) {
 	var template = this.templates[templateName];
+
 	if(!template) throw new Error('Template Not Found: ' + templateName);
+
 	return template;
 };
