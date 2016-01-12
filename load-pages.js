@@ -75,8 +75,13 @@ module.exports = function(pageCollections) {
 
 				var navItem;
 
-				if(page.nav !== false && nav)
+				if(page.nav !== false && nav) {
 					nav.push(navItem = _.pick(page, 'name', 'title', 'path', 'description'));
+
+					if(page.navPath)
+						navItem.path = page.navPath;
+				}
+
 
 				if(_.isArray(page.pages))
 					recurse(page.pages, pathArray, navItem ? navItem.pages = [] : undefined);
