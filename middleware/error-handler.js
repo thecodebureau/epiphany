@@ -20,7 +20,7 @@ module.exports = function errorHandler(error, req, res, next) {
 
 	res.status(error.status);
 
-	res.data = { error: error };
+	res.locals = { error: error };
 
 	next();
 };
