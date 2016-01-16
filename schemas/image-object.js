@@ -12,7 +12,7 @@ module.exports = {
 	mediumUrlPath: String,// local directory of file
 	ext: String,// extension of file, eg .png or .jpg
 	mime: String,
-	sizes: [],
+	//sizes: [],
 
 	//>>Properties from ImageObject
 	caption: String,//The caption for this object.
