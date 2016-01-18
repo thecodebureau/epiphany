@@ -58,7 +58,7 @@ var Epiphany = function(options) {
 		[ '/templates/*', 'get', require('./middleware/templates') ]
 	];
 
-	_.each([ options ].concat(options.modules), this.module, this);
+	_.each([ options ].concat(options.modules), this.module.bind(this));
 
 	_.merge(this, loadPages(options.pages), function(a, b) {
 		if (_.isArray(a)) {
@@ -84,13 +84,14 @@ Epiphany.prototype.module = function(module, last) {
 };
 
 Epiphany.prototype.start = function() {
+	var self = this;
+
 	this.prewares.forEach(function(middleware, i) {
 		if(_.isArray(middleware) && _.isString(middleware[0]))
-			this.express.use(middleware[0], middleware[1]);
+			self.express.use(middleware[0], middleware[1]);
 		else
-			this.express.use(middleware);
-
-	}, this);
+			self.express.use(middleware);
+	});
 
 	_.each(this.routes, function(arr) {
 		var path = arr[0],
@@ -101,21 +102,21 @@ Epiphany.prototype.start = function() {
 			throw new Error('Undefined or non-function as middleware for [' + method + ']:' + path);
 		}
 
-		this.express[method](path, middleware);
-	}, this);
+		self.express[method](path, middleware);
+	});
 
 	// initialize postwares (from old setPost)
 	this.postwares.forEach(function(middleware) {
-		this.express.use(middleware);
-	}, this);
+		self.express.use(middleware);
+	});
 
 	// connect to mongodb
 	mongoose.connect(this.config.mongo.uri, _.omit(this.config.mongo, 'uri'));
 
 	// start server and let them know it
 	this.express.listen(this.config.port, function() {
-		console.info('Express server started on port %s (%s)', this.config.port, ENV);
-	}.bind(this));
+		console.info('Express server started on port %s (%s)', self.config.port, ENV);
+	});
 };
 
 module.exports = Epiphany;
