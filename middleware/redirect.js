@@ -1,5 +1,11 @@
-module.exports = function(url) {
+module.exports = function(statusCode, url) {
+	if(_.isString(statusCode)) {
+		url = statusCode;
+
+		statusCode = 302;
+	}
+
 	return function redirect(req, res) {
-		res.redirect(url);
+		res.redirect(statusCode, url);
 	};
 };
