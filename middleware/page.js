@@ -8,7 +8,7 @@ module.exports = function(page, navigation, subnavigation) {
 		}, page);
 
 		if(req.xhr) {
-			res.locals.compiled = _.map(page.templates, dust.compiled, dust);
+			res.locals.compiled = _.map(page.templates, dust.compiled.bind(dust));
 		} else {
 			res.locals.user = req.user;
 			res.locals.navigation = navigation;

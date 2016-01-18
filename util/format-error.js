@@ -9,7 +9,7 @@ var fileLocationPattern = new RegExp(PWD + '\\/([\\/\\w-_\\.]+\\.js):(\\d*):(\\d
 function parseFileLocation(stack) {
 	if (_.isString(stack))
 		return _.zipObject(['fileName', 'lineNumber', 'columnNumber'],
-			_.rest(stack.match(fileLocationPattern)));
+			_.tail(stack.match(fileLocationPattern)));
 }
 
 module.exports = function(error, req) {

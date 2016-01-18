@@ -22,7 +22,7 @@ dust.dependencies = function(templates) {
 		check = templates;
 
 	while(check.length) {
-		var deps = _.unique(_.compact(_.flatten(_.map(check, dependencies))));
+		var deps = _.uniq(_.compact(_.flatten(_.map(check, dependencies))));
 
 		check = _.difference(deps, collected, templates);
 
