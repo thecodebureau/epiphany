@@ -22,6 +22,7 @@ module.exports = function(error, req) {
 	error.path = req.path;
 	error.method = req.method;
 	error.ip = req.ip;
+	error.user = req.user && req.user.id;
 	error.userAgent = req.headers['user-agent'];
 
 	if(error.status >= 500) {
