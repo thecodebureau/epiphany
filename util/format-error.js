@@ -37,7 +37,7 @@ module.exports = function(error, req) {
 
 		if(error.name === 'ValidationError') {
 			error.details = {
-				validationErrors: _.pluck(error.errors, 'message')
+				validationErrors: _.map(error.errors, 'message')
 			};
 		}
 	} else {
@@ -45,7 +45,7 @@ module.exports = function(error, req) {
 	}
 
 	// sort properties by name
-	error = _.object(_.sortBy(_.pairs(error), function(pair) { 
+	error = _.fromPairs(_.sortBy(_.toPairs(error), function(pair) { 
 		return pair[0];
 	}));
 

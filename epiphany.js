@@ -60,7 +60,7 @@ var Epiphany = function(options) {
 
 	_.each([ options ].concat(options.modules), this.module.bind(this));
 
-	_.merge(this, loadPages(options.pages), function(a, b) {
+	_.mergeWith(this, loadPages(options.pages), function(a, b) {
 		if (_.isArray(a)) {
 			return a.concat(b);
 		}
