@@ -1,6 +1,6 @@
 {
   "name": "epiphany",
-  "version": "0.8.0-alpha",
+  "version": "0.8.0",
   "description": "I just got one.",
   "main": "./index.js",
   "scripts": {
