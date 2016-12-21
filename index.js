@@ -6,21 +6,21 @@ var p = require('path');
 
 // set up some globals
 global.ENV = global.ENV || process.env.NODE_ENV || 'development';
-global.PWD = global.PWD || process.env.PWD || process.cwd();
+global.PWD = global.PWD || process.env.NODE_PWD || process.cwd();
 
 var symlinked = __dirname.indexOf(PWD) < 0;
 
 if(symlinked) {
-	module.paths.unshift(p.join(process.env.PWD, 'node_modules'));
+	module.paths.unshift(p.join(PWD, 'node_modules'));
 }
 
 var appModulePath = require( 'app-module-path');
 
 if(symlinked)
 	// only needed for symlinked modules. such as epiphany itself or hats
-	appModulePath.addPath(p.join(process.env.PWD, 'node_modules'));
+	appModulePath.addPath(p.join(PWD, 'node_modules'));
 
-appModulePath.addPath(p.join(process.env.PWD, 'modules'));
+appModulePath.addPath(p.join(PWD, 'modules'));
 
 var colorizeStack = require('./util/colorize-stack');
 
